@@ -1,4 +1,4 @@
-package com.toshibaGCS.SystemManagement.utils;
+package com.skv.JMeterAutomation.utils;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
-import com.toshibaGCS.SystemManagement.framework.TestAutomationLogger;
+import com.skv.JMeterAutomation.framework.TestAutomationLogger;
 
 public class PropertyFileUtils {
 	

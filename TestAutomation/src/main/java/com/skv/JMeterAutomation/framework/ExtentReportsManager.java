@@ -1,4 +1,4 @@
-package com.toshibaGCS.SystemManagement.framework;
+package com.skv.JMeterAutomation.framework;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -8,7 +8,7 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
 import com.aventstack.extentreports.reporter.configuration.ChartLocation;
 import com.aventstack.extentreports.reporter.configuration.Theme;
-import com.toshibaGCS.SystemManagement.utils.PropertyFileUtils;
+import com.skv.JMeterAutomation.utils.PropertyFileUtils;
 
 public class ExtentReportsManager {
 	

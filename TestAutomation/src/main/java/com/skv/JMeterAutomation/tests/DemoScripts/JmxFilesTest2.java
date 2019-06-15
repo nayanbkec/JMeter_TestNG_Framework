@@ -1,4 +1,4 @@
-package com.toshibaGCS.SystemManagement.tests.TestDemo;
+package com.skv.JMeterAutomation.tests.DemoScripts;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,10 +12,12 @@ import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.skv.JMeterAutomation.framework.BaseClass;
+import com.skv.JMeterAutomation.framework.JMeterResultCollector;
+import com.skv.JMeterAutomation.framework.TestAutomationLogger;
+
 import org.apache.jorphan.collections.HashTree;
-import com.toshibaGCS.SystemManagement.framework.BaseClass;
-import com.toshibaGCS.SystemManagement.framework.JMeterResultCollector;
-import com.toshibaGCS.SystemManagement.framework.TestAutomationLogger;
 
 import io.qameta.allure.Description;
 import io.qameta.allure.Epic;

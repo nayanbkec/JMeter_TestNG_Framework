@@ -1,4 +1,4 @@
-package com.toshibaGCS.SystemManagement.framework;
+package com.skv.JMeterAutomation.framework;
 
 import org.testng.annotations.BeforeClass;
 import org.apache.jmeter.save.SaveService;

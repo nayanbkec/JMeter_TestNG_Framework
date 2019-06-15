@@ -1,4 +1,4 @@
-package com.toshibaGCS.SystemManagement.framework;
+package com.skv.JMeterAutomation.framework;
 
 import org.testng.ITestContext;
 import org.testng.ITestListener;

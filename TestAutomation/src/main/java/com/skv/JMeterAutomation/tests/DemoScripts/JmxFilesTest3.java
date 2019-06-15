@@ -1,18 +1,19 @@
-package com.toshibaGCS.SystemManagement.tests.TestDemo;
+package com.skv.JMeterAutomation.tests.DemoScripts;
 
 import java.io.File;
 import org.apache.jmeter.engine.StandardJMeterEngine;
 import org.apache.jmeter.reporters.Summariser;
 import org.apache.jmeter.save.SaveService;
 import org.apache.jmeter.util.JMeterUtils;
+import org.apache.jorphan.collections.HashTree;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.apache.jorphan.collections.HashTree;
-import com.toshibaGCS.SystemManagement.framework.BaseClass;
-import com.toshibaGCS.SystemManagement.framework.JMeterResultCollector;
-import com.toshibaGCS.SystemManagement.framework.TestAutomationLogger;
+
+import com.skv.JMeterAutomation.framework.BaseClass;
+import com.skv.JMeterAutomation.framework.JMeterResultCollector;
+import com.skv.JMeterAutomation.framework.TestAutomationLogger;
 
 import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
@@ -21,15 +22,16 @@ import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 import io.qameta.allure.Story;
 
-public class JmxFilesTest1 extends BaseClass {
-	
+public class JmxFilesTest3 extends BaseClass {
+
 	StandardJMeterEngine jmeter = new StandardJMeterEngine();
 	Summariser summer = null;
 	JMeterResultCollector results;
-	
+
 	@BeforeMethod(alwaysRun=true)
 	public void beforeMethod() {
 	}
+
 	@AfterMethod(alwaysRun=true)
 	public void afterMethod() {
 		jmeter.exit();
@@ -37,18 +39,18 @@ public class JmxFilesTest1 extends BaseClass {
 		results.clearData();
 		results.flushFile();
 	}
-	
-	@Test(description = "Demo_TC_001", groups = {"DemoTest", "JmxFilesTest1"})
-	@Description("Calling Hello-World Test")
-	@Epic("RSMP v1.2")
+
+	@Test(description = "Demo_TC_003", groups = {"DemoTest", "JmxFilesTest3"})
+	@Description("Executing Welcome Function Test")
+	@Epic("RSMP v1.0")
 	@Feature("Landing-Zone")
 	@Story("User Story: LZ Events")
 	@Severity(SeverityLevel.CRITICAL)
-	public void Demo_TC_001() throws Exception {
-		File JmxFile1 = new File(System.getenv("AUTO_HOME") + "/scripts/MyTestJmxFiles/CreateFolder_1.jmx");
-		HashTree testPlanTree = SaveService.loadTree(JmxFile1);
+	public void Demo_TC_003() throws Exception {
+		File JmxFile3 = new File(System.getenv("AUTO_HOME") + "/scripts/MyTestJmxFiles/CreateFolder_3.jmx");
+		HashTree testPlanTree = SaveService.loadTree(JmxFile3);
 		jmeter.configure(testPlanTree);
-		
+
 		String summariserName = JMeterUtils.getPropDefault("summariser.name", "TestSummary");
 		if (summariserName.length() > 0) {
 			summer = new Summariser(summariserName);
@@ -57,7 +59,7 @@ public class JmxFilesTest1 extends BaseClass {
 		//String logFile = System.getenv("AUTO_HOME") + "/logs/JMeterSummaryReport.jtl";
 		//results.setFilename(logFile);
 		testPlanTree.add(testPlanTree.getArray()[0], results);
-		
+
 		jmeter.runTest();
 		
 		while (jmeter.isActive())

@@ -1,8 +1,8 @@
-package com.toshibaGCS.SystemManagement.framework;
+package com.skv.JMeterAutomation.framework;
 
 import org.testng.annotations.BeforeSuite;
 
-import com.toshibaGCS.SystemManagement.utils.PropertyFileUtils;
+import com.skv.JMeterAutomation.utils.PropertyFileUtils;
 
 import java.io.File;
 import java.io.IOException;

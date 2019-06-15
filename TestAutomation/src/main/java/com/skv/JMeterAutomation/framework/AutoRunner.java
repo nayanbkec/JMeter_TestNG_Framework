@@ -1,4 +1,4 @@
-package com.toshibaGCS.SystemManagement.framework;
+package com.skv.JMeterAutomation.framework;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import org.testng.TestListenerAdapter;
 import org.testng.TestNG;
 import org.testng.collections.Lists;
 
-import com.toshibaGCS.SystemManagement.utils.PropertyFileUtils;
+import com.skv.JMeterAutomation.utils.PropertyFileUtils;
 
 public class AutoRunner {
 

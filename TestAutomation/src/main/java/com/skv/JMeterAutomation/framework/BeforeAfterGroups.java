@@ -1,4 +1,4 @@
-package com.toshibaGCS.SystemManagement.framework;
+package com.skv.JMeterAutomation.framework;
 
 import org.testng.annotations.AfterGroups;
 import org.testng.annotations.BeforeGroups;

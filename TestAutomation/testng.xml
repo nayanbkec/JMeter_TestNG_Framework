@@ -4,9 +4,9 @@
 	parallel="false">
 
 	<listeners>
-		<listener class-name="com.toshibaGCS.SystemManagement.framework.TestSuiteListener" />
-		<listener class-name="com.toshibaGCS.SystemManagement.framework.TestExecutionListener" />
-		<listener class-name="com.toshibaGCS.SystemManagement.framework.ExtentReportsListener" />
+		<listener class-name="com.skv.JMeterAutomation.framework.TestSuiteListener" />
+		<listener class-name="com.skv.JMeterAutomation.framework.TestExecutionListener" />
+		<listener class-name="com.skv.JMeterAutomation.framework.ExtentReportsListener" />
 	</listeners>
 
 	<test name="DemoTests" preserve-order="true">
@@ -17,9 +17,9 @@
 			</run> 
 		</groups>
 		<packages>
-			<package name="com.toshibaGCS.SystemManagement.framework" />
-			<package name="com.toshibaGCS.SystemManagement.tests.TestDemo" />
-			<package name="com.toshibaGCS.SystemManagement.tests.TestScripts" />
+			<package name="com.skv.JMeterAutomation.framework" />
+			<package name="com.skv.JMeterAutomation.tests.DemoScripts" />
+			<package name="com.skv.JMeterAutomation.tests.TestScripts" />
 		</packages>		
 	</test>	
 </suite>
