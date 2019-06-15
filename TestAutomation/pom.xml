@@ -6,7 +6,7 @@
 	<artifactId>TestAutomation</artifactId>
 	<version>1.0</version>
 	<name>TestAutomation</name>
-	
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<JMeter.Version>5.0</JMeter.Version>
@@ -28,6 +28,11 @@
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
 			<version>0.1.54</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20180813</version>
 		</dependency>
 		<!-- Reporting Tools -->
 		<dependency>
@@ -249,10 +254,10 @@
 		</plugins>
 	</build>
 	<repositories>
-        <repository>
-          <id>central</id>
-          <name>Central Repository</name>
-          <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-    </repositories>
+		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
+	</repositories>
 </project>
