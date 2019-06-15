@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Passed Tests",
+    "matchedStatuses": ["passed"]
+  },
+    {
+    "name": "Failed Tests",
+    "matchedStatuses": ["failed"]
+  },
+  {
+    "name": "Skipped Tests", 
+    "matchedStatuses": ["skipped"] 
+  },
+  {
+    "name": "Outdated Tests",
+    "matchedStatuses": ["broken"],
+    "traceRegex": ".*FileNotFoundException.*"
+  },
+  {
+    "name": "Framework Issues",
+    "matchedStatuses": ["broken"]
+  },
+  {
+    "name": "Connection Refused",
+    "matchedStatuses": ["failed"],
+    "messageRegex": ".*Connection refused.*"
+  },
+  {
+    "name": "JavaScript Errors",
+    "matchedStatuses": ["failed"],
+    "messageRegex": ".*Error processing Javascript.*"
+  },
+    {
+    "name": "JavaScript Warnings",
+    "matchedStatuses": ["passed"],
+    "traceRegex": ".*ScriptException.*"
+  }
+]

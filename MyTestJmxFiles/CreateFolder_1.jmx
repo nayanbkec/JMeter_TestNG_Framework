@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.0 r1840935">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="CreateFolder_1" enabled="true">
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <stringProp name="TestPlan.comments">Sample test for demonstrating JMeter Ant build script and Schematic stylesheet</stringProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+        <longProp name="ThreadGroup.start_time">1143889321000</longProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <longProp name="ThreadGroup.end_time">1143889321000</longProp>
+        <stringProp name="ThreadGroup.on_sample_error">stoptest</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="Script One - ${__TestPlanName} - Sampler One" enabled="true">
+          <stringProp name="BeanShellSampler.query">File file = new File(&quot;C:\\Users\\Administrator\\Desktop\\JMX_File_1_Folder&quot;);
+		if (!file.exists()) {
+			if (file.mkdir()) {
+				System.out.println(&quot;Directory is created!&quot;);
+			} else {
+				System.out.println(&quot;Failed to create directory!&quot;);
+			}
+		}</stringProp>
+          <stringProp name="BeanShellSampler.filename"></stringProp>
+          <stringProp name="BeanShellSampler.parameters"></stringProp>
+          <boolProp name="BeanShellSampler.resetInterpreter">false</boolProp>
+        </BeanShellSampler>
+        <hashTree/>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Test Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="InputEventFile" elementType="Argument">
+            <stringProp name="Argument.name">InputEventFile</stringProp>
+            <stringProp name="Argument.value">${AUTOMATION_HOME}${__property(LZEventFolder)}/${__property(LZSingleEventFileR1)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="ServiceNowDataFolderForEvents" elementType="Argument">
+            <stringProp name="Argument.name">ServiceNowDataFolderForEvents</stringProp>
+            <stringProp name="Argument.value">${__property(SN_KARAF_HOME)}/${__property(SN_DataFolder)}/${__property(RetailerID1)}/events</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="count" elementType="Argument">
+            <stringProp name="Argument.name">count</stringProp>
+            <stringProp name="Argument.value">${__property(numberOfSamplesToWait)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="count_for_events" elementType="Argument">
+            <stringProp name="Argument.name">count_for_events</stringProp>
+            <stringProp name="Argument.value">${__property(samplesToWaitForEvent)}</stringProp>
+            <stringProp name="Argument.desc">No of runs to wait for output folder</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="constantTime" elementType="Argument">
+            <stringProp name="Argument.name">constantTime</stringProp>
+            <stringProp name="Argument.value">${__property(constantTimeforUpdatestatusinDB)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="SN_WaitTime" elementType="Argument">
+            <stringProp name="Argument.name">SN_WaitTime</stringProp>
+            <stringProp name="Argument.value">${__property(SN_WaitTime)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="inputRetailerID" elementType="Argument">
+            <stringProp name="Argument.name">inputRetailerID</stringProp>
+            <stringProp name="Argument.value">${__property(RetailerID1)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="CFMOCKInputEventFileFolder" elementType="Argument">
+            <stringProp name="Argument.name">CFMOCKInputEventFileFolder</stringProp>
+            <stringProp name="Argument.value">${__property(CF_Moke_Events_Input)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="windowsUserID" elementType="Argument">
+            <stringProp name="Argument.name">windowsUserID</stringProp>
+            <stringProp name="Argument.value">${__property(windowsUserID)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="windowsPassword" elementType="Argument">
+            <stringProp name="Argument.name">windowsPassword</stringProp>
+            <stringProp name="Argument.value">${__property(windowsPassword)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments">RetailerID and other data we need to get from file and CF.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Environment Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="AUTOMATION_HOME" elementType="Argument">
+            <stringProp name="Argument.name">AUTOMATION_HOME</stringProp>
+            <stringProp name="Argument.value">${__env(AUTO_HOME, AUTOMATION_HOME,C:\AutomationHome)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments">Setting Environment Variable AUTO_HOME</stringProp>
+      </Arguments>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
