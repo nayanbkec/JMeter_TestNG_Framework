@@ -34,6 +34,11 @@
 			<artifactId>json</artifactId>
 			<version>20180813</version>
 		</dependency>
+		<dependency>
+			<groupId>net.javacrumbs.json-unit</groupId>
+			<artifactId>json-unit-core</artifactId>
+			<version>1.5.2</version>
+		</dependency>
 		<!-- Reporting Tools -->
 		<dependency>
 			<groupId>com.aventstack</groupId>
