@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="SystemsManagementTestSuite" thread-count="5"
+<suite name="JMeterTestSuite" thread-count="5"
 	parallel="false">
 
 	<listeners>
@@ -9,18 +9,17 @@
 		<listener class-name="com.toshibaGCS.SystemManagement.framework.ExtentReportsListener" />
 	</listeners>
 
-	<test name="LandingZone_Automation" preserve-order="true">
+	<test name="DemoTests" preserve-order="true">
 		<groups> 
 			<run>
 			    <include name="DemoTest" />
-				<exclude name="Landing-Zone" /> 
-				<exclude name="Cloud-Forwarder" />
+				<exclude name="SampleTest" /> 
 			</run> 
 		</groups>
 		<packages>
 			<package name="com.toshibaGCS.SystemManagement.framework" />
-			<package name="com.toshibaGCS.SystemManagement.tests.CloudForwarder" />
-			<package name="com.toshibaGCS.SystemManagement.tests.LandingZone" />
+			<package name="com.toshibaGCS.SystemManagement.tests.TestDemo" />
+			<package name="com.toshibaGCS.SystemManagement.tests.TestScripts" />
 		</packages>		
 	</test>	
 </suite>
