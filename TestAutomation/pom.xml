@@ -9,7 +9,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<JMeter.Version>5.0</JMeter.Version>
+		<JMeter.Version>5.1.1</JMeter.Version>
 	</properties>
 
 	<dependencies>
