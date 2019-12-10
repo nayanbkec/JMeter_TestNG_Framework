@@ -1,0 +1,80 @@
+properties([
+ buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '15', numToKeepStr: '')),
+ pipelineTriggers([
+  cron('H 2 * * *')
+ ]),
+ parameters(
+            [string(defaultValue: 'GLADIATOR', description: 'Enter the BOX NAME used for Automation Run...', name: 'BOX_NAME'),
+             string(defaultValue: 'Edison1@3', description: 'Enter the WRSROOT password...', name: 'WRSROOT_PASSWORD'),
+             string(defaultValue: 'CT', description: 'Enter the MODALITY type...', name: 'MODALITY'),
+             string(defaultValue: '@loginCredentials,@ldap,@ldapmultirole,@registerDeviceUi,@mwlUI,@role,@auditlog,@userMgmt,@fetchDiagData,@FlowMgrDiffStatusCheck,@ilo,@logCollector,@antiVirus,@versionUtility,@EES_i18n,@SysDiagUtils,@RestartAppfrmAdminConsole,@rebootSit', description: 'Enter the tags separated by comma...', name: 'TAGS_TO_RUN')]
+            )
+])
+
+node ('centos || centos3 || centosJenkins') {
+ def MVN = '/root/Desktop/apache-maven-3.3.9/bin/mvn'
+ def GIT_URL = 'https://gitlab-gxp.cloud.health.ge.com/Edison-Imaging-Service/eis_cucumber_edge_sit'
+ def GIT_BRANCH = 'master'
+ def GIT_CREDENTIAL = '5834e6a8-eb1c-4c3b-a49b-ff8959ab3ab5'
+ def AUTO_HOME = 'eis_cucumber_edge_sit/crs_eismicroservices_component'
+ def TEST_RESULTS = 'Automation_Results'
+
+ def remoteHost = [:]
+ remoteHost.name = 'AutomationResultsHost'
+ remoteHost.host = '10.177.200.54'
+ remoteHost.user = 'sdc'
+ remoteHost.password = 'adw2.0'
+ remoteHost.allowAnyHosts = true
+
+ def REMOTE_DIR = '/export/home/sdc/Sumith/SIT_Automation_Results'
+
+ stage('START') {
+  // sh "env | sort"
+  echo ">>> Cleaning Workspace..."
+  sh "rm -rf *"
+
+  echo ">>> Checking out Automation Code from GIT Repo..."
+  sh "git clone https://502782741:Pa55word@gitlab-gxp.cloud.health.ge.com/Edison-Imaging-Service/eis_cucumber_edge_sit.git"
+  sh "cd eis_cucumber_edge_sit/crs_eismicroservices_component && git checkout master"
+
+  echo ">>> Creating Test Results folder..."
+  sh "mkdir ${AUTO_HOME}/${TEST_RESULTS}"
+ }
+ 
+  echo ">>> >> > JENKINS DYNAMIC STAGE GENERATION < << <<<"
+
+def tags = params.TAGS_TO_RUN.split(',')
+for (int i = 0; i < tags.length; i++) {
+    stage("${tags[i]}") {
+  echo "RUNNING TAGS : ${tags[i]}..."
+  dir(AUTO_HOME) {
+   sh "python SIT_RunJenkins.py ${BOX_NAME} ${tags[i]} ${MODALITY} ${WRSROOT_PASSWORD}"
+   sh "mkdir ${TEST_RESULTS}/${tags[i]}"
+   sh "cp target/results/cucumber-results-agg-test-results.html ${TEST_RESULTS}/${tags[i]}/cucumber-results-agg-test-results.html"
+   sh "cp target/cucumber-reports/SIT_Automation_Results.html ${TEST_RESULTS}/${tags[i]}/SIT_Automation_Results.html"
+   sh "cp target/cucumber.json ${TEST_RESULTS}/${tags[i]}/cucumber.json"
+
+   publishHTML(target: [
+    allowMissing: false,
+    alwaysLinkToLastBuild: false,
+    keepAll: true,
+    reportDir: "${TEST_RESULTS}/${tags[i]}",
+    reportFiles: "cucumber-results-agg-test-results.html",
+    reportName: "Test Results - ${tags[i]}"
+   ])
+  }}
+}
+
+ stage('END') {
+  dir(AUTO_HOME) {
+   echo ">>> Copying the Execution Logs..."
+   sh "cp logs/AutomationExecutionLogs.log ${TEST_RESULTS}/AutomationExecutionLogs.log"
+   
+   echo ">>> Archieving the Automation Test Results..."
+   sh "tar -cvf ${JOB_NAME}_${BUILD_DISPLAY_NAME}_${BUILD_TIMESTAMP}.tar ${TEST_RESULTS}/"
+
+   echo ">>> Copying the Automation Results to a Remote Host..."
+   sshPut remote: remoteHost, from: "${JOB_NAME}_${BUILD_DISPLAY_NAME}_${BUILD_TIMESTAMP}.tar", into: "${REMOTE_DIR}"
+  }
+ }
+}
