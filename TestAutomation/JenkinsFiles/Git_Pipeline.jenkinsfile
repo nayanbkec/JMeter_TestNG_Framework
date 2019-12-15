@@ -1,0 +1,63 @@
+properties([
+   buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '12')),
+   pipelineTriggers([
+      // cron('H 22 * * *')
+   ])
+])
+
+node {
+ def SPRING_CLOUD_DIR = "SpringloudContract"
+ def STUB_SERVER = "StubServer"
+ def CUCUMBER_AUTOMATION = "Cucumber"
+ def GIT_URL = "https://github.com/sachgupt2/automation-repo.git"
+ def GIT_BRANCH = "master"
+ def GIT_CREDENTIAL = "5834e6a8-eb1c-4c3b-a49b-ff8959ab3ab5"
+ 
+
+
+stage('CLEAN_WORKSPACE') {
+     echo "Starting Cleaning Workspace"
+     
+  try{
+     echo "Deleting directory ${SPRING_CLOUD_DIR}"
+     bat "RMDIR /Q/S ${SPRING_CLOUD_DIR}"
+     
+     echo "Deleting directory ${STUB_SERVER}"
+     bat "RMDIR /Q/S ${STUB_SERVER}"
+     
+     echo "Deleting directory ${STUB_SERVER}"
+     bat "RMDIR /Q/S ${STUB_SERVER}"
+  }
+  catch(e){
+      echo "Directories do not exist"
+  }
+  
+}
+stage('CHECKOUT_PROJECTS_FROM_GIT_HUB') {
+  echo "Fetching project from Git Hub..."  
+  dir(SPRING_CLOUD_DIR)
+     {
+           git branch: "${GIT_BRANCH}", credentialsId: "${GIT_CREDENTIAL}", url: "${GIT_URL}"
+     }
+}
+
+stage('BUILD_SPRING_CLOUD_CONTRACT') {
+  echo "Building Stubs jar...."  
+  bat "cd ${SPRING_CLOUD_DIR}/spring-cloud-contract && mvn clean install"
+}
+
+stage('BUILD_STUB_SERVER') {
+ echo "Building Stub Server Project ..."  
+ bat "cd ${SPRING_CLOUD_DIR}/stub-runner-boot-master && mvn clean package"
+}
+
+stage('BUILD_CUCUMBER_AUTOMATION') {
+  echo "Building Automation Project ..." 
+  bat "cd ${SPRING_CLOUD_DIR}/Cucumber-Tests-Packaging && mvn clean package"
+}
+
+stage('DEPLOY_CHANGES_IN_TEST_MACHINE') {
+ echo "Deploying changes"  
+ 
+}
+}

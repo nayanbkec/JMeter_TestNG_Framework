@@ -1,0 +1,195 @@
+def call(body) {
+    def config = [:]
+    body.resolveStrategy = Closure.DELEGATE_FIRST
+    body.delegate = config
+    body()
+    def bddNodeIp = "${env.bdd_publisher_node}"
+    def baseDir = pwd()
+    def host_ip = 10.12.41.78
+    def controller_ip = 10.177.212.38
+    def controller_port = 22
+    def adminConsoleIp= 10.12.41.75
+    def gitlabBranch = master
+    def cloud_name = SIT
+    //def destinationUrl
+    def host_token = eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tNHhjZzYiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjE3NDEwZDFmLTA3OTQtMTFlYS05ZWJiLWZhMTYzZTFkYzhlMyIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.2XAMgctzGpJ5_pP4zW3zwncTBAMGIgVns9VFrUpwI0IN3MrjgJdsKd0LTlJ0CWqRhhTpFw59OQ6uh0kkuy7NCEZUs3YlQjSJ1qvrRkoJsZXEqL2pRqe0sn-XHDBpA-szuYUlyMzpzpIutsahT82xOhV4wLE77MgC-TxFHhxYs5PvFVb5f2i-uSiQpWM2BuTaJKdp1hjDCcu0DNdEo0PCieWfb5Zfp9IpUHWmTWGPzQUwac7Gvrq8-yYgQgwU4VQwwyqAuTOG9NNiOBPdXVWDdV592eSJ_ikzeX-7THkt1ZmAegjjLfEOy_ELZ6-besnTmA3Ecl_7EtyPs-v_9SkdmA
+    def controller_password = Edison1@3
+    def controller_username = wrsroot
+    def testStatus
+    def tar_destination = "/opt/tomcat/webapps/nightly-test-results/" + env.BUILD_ID + "/system-tests/"
+    def systemTestReportData = readFile ("${env.WORKSPACE}/systemTestReportTemplate")
+    def podSpecFileContents,slave_label,logs,errorMsg1 ,errorMsg2 ,successMsg,result1,result2,result3,destinationUrl1,destinationUrl2
+    podSpecFileContents = readFile "${env.WORKSPACE}/default-pod-specs.yaml"
+    println "Admin Console IP is ${adminConsoleIp}"
+    timestamps {
+    node('centosJenkins') {
+        sh """
+            mkdir -p ${tar_destination}{in-cluster,in-vm}
+        """ 
+    }
+  #  sh """ python ${env.WORKSPACE}/component_test_report_generator.py ${env.WORKSPACE}/systemTestReportTemplate system-test-html-report.html
+   #     cp system-test-html-report.html ${env.WORKSPACE}
+   # """
+    //########### create mock apps ############
+    dir("mock_apps_directory"){
+        git branch: 'master', changelog: false, credentialsId: 'root-user-docker06', poll: false, url: 'git@gitlab-gxp.cloud.health.ge.com:Edison-Imaging-Service/system_testing_mocks.git'
+        println "starting mock app 1 deployment"
+        helmInstall{
+            manifestFolderLocation = "ngssf-invoker-deployment-manifest"
+            helmChartLocation = "ngssf-invoker"
+            checkoutBranch = "master"
+            delay_duration = 40
+            hostIp = host_ip
+            hostToken = host_token
+            hostProtocol = "http"
+            controllerIp = controller_ip
+        }
+        println "mock app 1 deployed"    
+        helmInstall{
+            manifestFolderLocation = "ngssf-mock-deployment-manifest"
+            helmChartLocation = "ngssf-mock"
+            checkoutBranch = "master"
+            delay_duration = 40
+            hostIp = host_ip
+            hostToken = host_token
+            hostProtocol = "http"
+            controllerIp = controller_ip
+        }
+        println "mock app 2 deployed"  
+    }
+
+    //run tests inside the cluster
+    echo "[Jenkinsfile] kubernetes container spinning up for system testing"                        
+    slave_label = "system-test-runner-${env.BUILD_ID}"
+    retry(3) {
+        sleep 30
+        git branch: 'master', changelog: false, credentialsId: 'root-user-docker06', poll: false, url: 'git@gitlab-gxp.cloud.health.ge.com:Edison-Imaging-Service/eis_cucumber_edge_sit.git'
+    }
+    sh "ls -la"
+    if (fileExists('deploy.yml')){
+        podSpecFileContents = readFile 'deploy.yml'
+        echo "custom pod specs file exists"
+    }
+    println podSpecFileContents 
+    podTemplate(label: slave_label, cloud: "${cloud_name}", podRetention: always(), yaml: "${podSpecFileContents}") {     
+        node(slave_label) {
+            try{
+                timeout(120) {
+                    container('custom-slave') {
+                        dir ('system-tests-dir'){
+                            baseDir = pwd()
+                            retry(3) {
+                                sleep 30
+                                git branch: 'master', changelog: false, credentialsId: 'root-user-docker06', poll: false, url: 'git@gitlab-gxp.cloud.health.ge.com:Edison-Imaging-Service/eis_cucumber_edge_sit.git'
+                            }
+                            echo "|******************************************************************|"
+                            echo "[Jenkinsfile] Executing system Tests inside pod"
+                            echo "|******************************************************************|"
+                            dir('crs_eismicroservices_component'){
+                                reportDirectory="target/results"
+                                reportFileName='cucumber-results-agg-test-results.html'
+                                sh"""
+                                python Run_ClusterSanity.py ${controller_ip} ${controller_port} ${controller_username} ${controller_password} || echo "test execution failed inside cluster"
+                                """
+                               
+                                sh """
+                                ls -la
+                                    sshpass -p "$PASSWORD" scp -p -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${reportDirectory}/${reportFileName} "${USERNAME}"@"${bddNodeIp}":"${tar_destination}in-cluster" || echo "System tests inside cluster Report not found"
+                                """
+                                
+                            } 
+                        }
+                    }
+                }
+            }
+            catch(err){
+                testStatus = "Failed(Timed Out)"
+                destinationUrl1 = "Report not found"
+            }
+            script {
+                logs = currentBuild.rawBuild.getLog(1000)
+                errorMsg1 = "Inside Cluster Execution Failed....."
+                errorMsg2 = "System tests inside cluster Report not found"
+                successMsg ="Inside Cluster Execution passed ...."
+                result1 = logs.find { it.contains(errorMsg1) }
+                result2 = logs.find { it.contains(successMsg) }
+                result3 = logs.find { it.contains(errorMsg2) }
+                if (result1) {
+                    testStatus = "Failed"
+                    sh """echo "system Test failed" >> tempFile"""
+                    destinationUrl1 = "http://${env.bdd_publisher_node}:8080/nightly-test-results/${build_id}/system-tests/in-cluster/${reportFileName}"
+                }
+                if (result2){
+                    testStatus = "Success"
+                    destinationUrl1 = "http://${env.bdd_publisher_node}:8080/nightly-test-results/${build_id}/system-tests/in-cluster/${reportFileName}"
+                }
+                if (result3){
+                    destinationUrl1 = "Report Not Found"
+                }
+
+            }
+        }
+    }
+    systemTestReportData = systemTestReportData.replace("Inside cluster,Not run,NA","Inside cluster,${testStatus},${destinationUrl1}")
+    //run tests on VM
+    try{
+        timeout(120) {
+            node('sit'){
+                baseDir = pwd()
+                reportDirectory="${baseDir}/crs_eismicroservices_component/target/results"
+                reportFileName='cucumber-results-agg-test-results.html'
+                retry(3) {   
+                    sleep 30     
+                    git branch: 'master', changelog: false, credentialsId: 'root-user-docker06', poll: false, url: 'git@gitlab-gxp.cloud.health.ge.com:Edison-Imaging-Service/eis_cucumber_edge_sit.git'
+                }
+                echo "|******************************************************************|"
+                echo "[Jenkinsfile] Executing system Tests on SIT vm"
+                echo "|******************************************************************|"
+                dir('crs_eismicroservices_component'){
+                    sh"""
+                    python sit_sanity.py ${adminConsoleIp} || echo "test execution failed outside cluster"
+                    """
+                }
+                withCredentials([usernamePassword(credentialsId: '8c5d662b-bd6c-49b4-a545-2568f3f93dee', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh """
+                        sshpass -p "$PASSWORD" scp -p -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${reportDirectory}/${reportFileName} "${USERNAME}"@"${bddNodeIp}":"${tar_destination}in-vm" || echo "System tests inside vm Report not found"
+                    """
+                }
+               // publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: "${reportDirectory}", reportFiles: "${reportFileName}", reportName: 'SIT Sanity Test Report', reportTitles: ''])
+            }
+        }
+    }catch(err){
+        testStatus = "Failed(Timed Out)"
+        destinationUrl2 = "Report Not Found"
+        sh """echo "system Test failed" >> tempFile"""
+    }
+    script {
+        logs = currentBuild.rawBuild.getLog(1000)
+        errorMsg1 = "Execution failed....."
+        errorMsg2 = "System tests inside vm Report not found"
+        successMsg ="Execution passed .... "
+        result1 = logs.find { it.contains(errorMsg1) }
+        result2 = logs.find { it.contains(successMsg) }
+        result3 = logs.find { it.contains(errorMsg2) }
+        if (result1) {
+            testStatus = "Failed"
+            sh """echo "system Test failed" >> tempFile"""
+            destinationUrl2 = "http://${env.bdd_publisher_node}:8080/nightly-test-results/${build_id}/system-tests/in-vm/${reportFileName}"
+        }
+        if (result2){
+            testStatus = "Success"
+            destinationUrl2 = "http://${env.bdd_publisher_node}:8080/nightly-test-results/${build_id}/system-tests/in-vm/${reportFileName}"
+        }
+        if (result3){
+            destinationUrl2 = "Report Not Found"
+        }
+
+    }
+    systemTestReportData = systemTestReportData.replace("Outside cluster,Not run,NA","Outside cluster,${testStatus},${destinationUrl2}")
+    writeFile file: "${env.WORKSPACE}/systemTestReportTemplate", text: systemTestReportData
+    sh """
+        python ${env.WORKSPACE}/component_test_report_generator.py ${env.WORKSPACE}/systemTestReportTemplate system-test-html-report.html
+        cp system-test-html-report.html ${env.WORKSPACE}
+    """
+}
+}

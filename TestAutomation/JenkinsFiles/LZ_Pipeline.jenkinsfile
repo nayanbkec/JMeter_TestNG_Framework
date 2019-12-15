@@ -1,0 +1,118 @@
+properties([
+    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '12')),
+    pipelineTriggers([
+        cron('H 22 * * *')
+    ])
+])
+
+node {
+    def mvnHome = tool name: 'Maven 3.5.0', type: 'maven'
+    def mvn = mvnHome + '/bin/mvn'
+    def AR_STREAM = 'Landing_Zone.rsmp_automation.1'
+    def AR_CRED_ID = 'accurev-jenkins_rsmp'
+    def AR_BIN = 'accurev'
+    def LZ_CI_DIR = "CI_Workspace"
+    def MAILING_LIST_TEST_RESULTS = "sumith.kv@toshibagcs.com,manoranjan.panigrahi@toshibagcs.com,meghana.rao@toshibagcs.com,randeep.sasidharan@toshibagcs.com,pankaj.khandelwal@toshibagcs.com,shanumuka.chaitanya@toshibagcs.com,gyesi.amaniampong@toshibagcs.com,glenn.rathje@toshibagcs.com"
+    
+    try {
+        notifyStarted()
+        
+    stage('CLEAN_WORKSPACE') {
+        echo "CLEAN THE WORKSPACE"
+        // For viewing Jenkins environment variables, uncomment the below line
+        // sh "env | sort"
+       dir(LZ_CI_DIR) {
+            sh "rm -rf Ansible_PlayBooks"
+            sh "pwd && ls -la"
+        }
+    }
+
+    stage('CHECKOUT_WORKSPACE') {
+       echo "CHECKING OUT ANSIBLE SCRIPTS"
+       withCredentials([usernamePassword(credentialsId: AR_CRED_ID, passwordVariable: 'password', usernameVariable: 'username')]) {
+            sh "${AR_BIN} login ${username} ${password}"
+            sh "${AR_BIN} pop -O -R -v ${AR_STREAM} -L ${LZ_CI_DIR} /./Ansible_PlayBooks"
+        }
+    }
+
+    stage('DEPLOY_TEST_ENVIRONMENT') {
+        dir(LZ_CI_DIR) {
+            // Copying the Automation artifacts to Ansile Roles. This will be used incase the Automation artifacts are not available in Nexus repository.
+            sh "cp /var/jenkins_home/workspace/RSMP/RSMP_Automation_Package/RSMP_Automation/TestAutomation/target/TestAutomation.zip Ansible_PlayBooks/Deploy-LZ-Automation/roles/test-automation/files/"
+            sh "cp /var/jenkins_home/workspace/RSMP/RSMP_Automation_Package/RSMP_Automation/AutomationPackage/target/AutomationPackage.zip Ansible_PlayBooks/Deploy-LZ-Automation/roles/test-automation/files/"
+            
+            // For generating SSH Keys, uncomment the below lines.
+            // sh "rm -rf Jenkins_SSH_Auth_Keys Jenkins_SSH_Auth_Keys.pub"
+            // sh "ssh-keygen -t rsa -f Jenkins_SSH_Auth_Keys"
+            // sh "cat Jenkins_SSH_Auth_Keys && cat Jenkins_SSH_Auth_Keys.pub"
+            // sh "chmod 600 Jenkins_SSH_Auth_Keys"
+            // sh "chmod 644 Jenkins_SSH_Auth_Keys.pub"
+            // sh "pwd && ls -la"
+            
+            echo "CHECKING ANSIBLE VERSION"
+            sh "ansible --version"
+            sh "ansible-playbook --version"
+            
+            echo "TRIGGERING TEST BED SETUP"
+            sh "cd Ansible_PlayBooks/Deploy-LZ-Automation && ansible-playbook Setup_LZ_Automation.yml --extra-vars 'Nexus_Location=SNAPSHOT LZ_Receiver_Version=1.1.1 LZ_Connector_Version=1.1.2'"
+        }
+    }
+ 
+    stage('RUN_AUTOMATION') {
+        dir(LZ_CI_DIR) {
+        echo "TRIGGERING TEST AUTOMATION"
+        sh "cd Ansible_PlayBooks/Deploy-LZ-Automation && ansible-playbook Run_LZ_Automation.yml"
+        
+        sh "cp -f /Test-Results.zip Ansible_PlayBooks/Deploy-LZ-Automation/"
+        sh "cd Ansible_PlayBooks/Deploy-LZ-Automation && unzip -o Test-Results.zip"
+        sh "ls -la Ansible_PlayBooks/Deploy-LZ-Automation/Test-Results"
+        }
+    }
+    
+    stage('PUBLISH_RESULTS') {
+        echo "PUBLISHING TEST RESULTS ON JENKINS"
+        dir(LZ_CI_DIR) {
+            echo "Publishing Extent Report"
+                            		publishHTML (target: [
+										allowMissing: false,
+										alwaysLinkToLastBuild: false,
+										keepAll: true,
+										reportDir: "Ansible_PlayBooks/Deploy-LZ-Automation/Test-Results/Extent-Report",
+										reportFiles: "Automation_Test_Results.html",
+										reportName: "TestResultsExtentReport"
+										])
+			echo "Publishing Allure Report"
+                            		publishHTML (target: [
+										allowMissing: false,
+										alwaysLinkToLastBuild: false,
+										keepAll: true,
+										reportDir: "Ansible_PlayBooks/Deploy-LZ-Automation/Test-Results/Allure-Report",
+										reportFiles: "index.html",
+										reportName: "TestResultsAllureReport"
+										])
+        }
+        dir(LZ_CI_DIR) {
+        echo "EMAILING TEST RESULTS"
+        if (currentBuild.currentResult == 'SUCCESS') {
+            
+            emailext (attachmentsPattern: "**/Automation_Test_Results.html", body: """<p>Hi All, <br> <br>Please find the Landing-Zone Automation Test Results. To view the test results, please click the link provided below or open the attached HTML file. <br>Jenkins logs also attached for reference.<br> <br>Build URL: ${BUILD_URL} <br> <br>Test Automation Results (Allure Report): ${BUILD_URL}TestResultsAllureReport <br>Test Automation Results (Extent Report): ${BUILD_URL}TestResultsExtentReport <br> <br>Thanks & Regards, <br>Landing-Zone CI Admin</p>""", subject: "LandingZone - Automation Test Results (Jenkins Build: ${env.JOB_NAME} ${currentBuild.displayName})", to: MAILING_LIST_TEST_RESULTS, attachLog: true)
+            // mail to: MAILING_LIST, subject:"LandingZone - Automation Test Results (Jenkins Build: ${env.JOB_NAME} ${currentBuild.displayName})", body: "Hi All, \n \nPlease find the Landing-Zone Automation test Results.\n \n \nBuild URL: ${BUILD_URL} \n \n \nTest Automation Results (Extent-Report): ${BUILD_URL}TestResultsExtentReport \n Test Automation Results (Allure-Report): ${BUILD_URL}TestResultsAllureReport \n \n \nThanks & Regards, \n Landing-Zone CI Admin"
+            }
+        }
+    }
+    } catch (e) {
+    currentBuild.result = "FAILED"
+    notifyFailed()
+    throw e
+  }
+}
+
+def notifyStarted() {
+    def MAILING_LIST_JOB_STATUS = "sumith.kv@toshibagcs.com,manoranjan.panigrahi@toshibagcs.com,meghana.rao@toshibagcs.com,randeep.sasidharan@toshibagcs.com,com,shanumuka.chaitanya@toshibagcs.com"
+    mail to: MAILING_LIST_JOB_STATUS, subject:"LandingZone CI Started (Jenkins Build: ${env.JOB_NAME} ${currentBuild.displayName})", body: "Hi All, \n \nLanding-Zone CI Job started in Jenkins Server. You will get the Test Automation Results, once the job is completed.\n \nThanks & Regards, \n Landing-Zone CI Admin"
+}
+
+def notifyFailed() {
+    def MAILING_LIST_JOB_STATUS = "sumith.kv@toshibagcs.com,manoranjan.panigrahi@toshibagcs.com,meghana.rao@toshibagcs.com,randeep.sasidharan@toshibagcs.com,pankaj.khandelwal@toshibagcs.com,shanumuka.chaitanya@toshibagcs.com"
+    mail to: MAILING_LIST_JOB_STATUS, subject:"FAILED!!! LandingZone_CI (Jenkins Build: ${env.JOB_NAME} ${currentBuild.displayName})", body: "Hi All, \n \nLandingZone CI job failed in Jenkins Server.\n \n \nBuild URL: ${BUILD_URL} \n \n \nThe failure may be due to the following reasons: \n 1. Jenkins pipeline script is unable to execute some steps \n 2. Ansible deployment script failed to execute some tasks \n 3. LandingZone Receiver build is failed at Jenkins Server \n 4. LandingZone Connector build is failed at Jenkins Server \n 5. The Test Server is not available \n \n \nThanks & Regards, \n Landing-Zone CI Admin"
+}
